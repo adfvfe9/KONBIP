@@ -1,0 +1,74 @@
+spring:
+  application:
+    name: konbip
+  profiles:
+    default: local
+  config:
+    # 로컬 비밀값(OAuth 키 등)은 backend/application-secret.yml 에 두면 자동으로 읽는다. (git 제외)
+    import: optional:file:./application-secret.yml
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/conbip?createDatabaseIfNotExist=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+  jpa:
+    open-in-view: false
+    hibernate:
+      # 스키마는 Flyway(db/migration)가 관리한다.
+      ddl-auto: none
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
+  flyway:
+    enabled: true
+    # Notion DB 명세서 SQL로 이미 테이블을 만든 DB라면 V1을 건너뛰고 V2부터 적용한다.
+    baseline-on-migrate: true
+    baseline-version: 1
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+
+server:
+  port: ${PORT:8080}
+
+konbip:
+  jwt:
+    issuer: konbip
+    # HS256 서명 키. 32바이트 이상. 배포 환경에서는 반드시 JWT_SECRET 환경변수로 바꾼다.
+    secret: ${JWT_SECRET:local-dev-only-secret-change-me-0123456789abcdef}
+    access-token-validity: 30m
+    refresh-token-validity: 14d
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
+  oauth:
+    # 백엔드 주소. 콜백 URL = {redirect-base-uri}/api/auth/oauth2/callback/{provider}
+    redirect-base-uri: ${OAUTH_REDIRECT_BASE_URI:http://localhost:8080}
+    # 소셜 로그인 후 토큰을 넘겨줄 프론트엔드 주소
+    frontend-redirect-uri: ${OAUTH_FRONTEND_REDIRECT_URI:http://localhost:5173/oauth/callback}
+    providers:
+      google:
+        client-id: ${GOOGLE_CLIENT_ID:}
+        client-secret: ${GOOGLE_CLIENT_SECRET:}
+        authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+        token-uri: https://oauth2.googleapis.com/token
+        user-info-uri: https://openidconnect.googleapis.com/v1/userinfo
+        scope: openid email profile
+      kakao:
+        client-id: ${KAKAO_CLIENT_ID:}
+        client-secret: ${KAKAO_CLIENT_SECRET:}
+        authorization-uri: https://kauth.kakao.com/oauth/authorize
+        token-uri: https://kauth.kakao.com/oauth/token
+        user-info-uri: https://kapi.kakao.com/v2/user/me
+        scope: ${KAKAO_SCOPE:}
+  tabecal:
+    base-url: ${TABECAL_BASE_URL:}
+    api-key: ${TABECAL_API_KEY:}
+  product-sync:
+    enabled: ${PRODUCT_SYNC_ENABLED:false}
+    cron: "0 0 4 * * *"
+    zone: Asia/Seoul
+  ranking:
+    # 별점 랭킹에 포함되기 위한 최소 리뷰 수 (요구사항 FR-RNK-02 안)
+    min-review-count: 3
+  seed:
+    enabled: false
