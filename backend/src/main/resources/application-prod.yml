@@ -1,0 +1,15 @@
+# 배포용 프로필: SPRING_PROFILES_ACTIVE=prod
+# 아래 값은 기본값 없이 환경변수로만 받는다. 없으면 서버가 뜨지 않는다.
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+konbip:
+  jwt:
+    secret: ${JWT_SECRET}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}
+  seed:
+    enabled: false

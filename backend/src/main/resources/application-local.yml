@@ -1,0 +1,9 @@
+# 로컬 개발용 프로필 (기본 프로필)
+konbip:
+  seed:
+    # DB가 비어 있으면 샘플 상품/회원/꿀조합을 넣는다. (dev.LocalDataSeeder)
+    enabled: true
+
+logging:
+  level:
+    com.konbip: debug
