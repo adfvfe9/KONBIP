@@ -1,5 +1,5 @@
 import client from "./client";
-import { db } from "../mocks/recipes";
+import { db, saveDb, resetDb, fileToDataUrl } from "../mocks/recipes";
 import { USE_MOCK, toCard } from "./recipes";
 
 const wait = (ms = 200) => new Promise((r) => setTimeout(r, ms));
@@ -18,13 +18,13 @@ export async function getMe() {
 }
 
 export async function updateNickname(nickname) {
-  if (USE_MOCK) { await wait(); db.me.nickname = nickname; return clone(db.me); }
+  if (USE_MOCK) { await wait(); db.me.nickname = nickname; saveDb(); return clone(db.me); }
   const res = await client.patch("/api/users/me", { nickname });
   return toMe(res.data);
 }
 
 export async function updateProfileImage(file) {
-  if (USE_MOCK) { await wait(); db.me.profileImageUrl = URL.createObjectURL(file); return clone(db.me); }
+  if (USE_MOCK) { db.me.profileImageUrl = await fileToDataUrl(file, 400); saveDb(); return clone(db.me); }
   const form = new FormData();
   form.append("image", file);
   const res = await client.put("/api/users/me/profile-image", form);
@@ -33,12 +33,12 @@ export async function updateProfileImage(file) {
 }
 
 export async function getSavedRecipes() {
-  if (USE_MOCK) { await wait(); return clone(db.recipes.filter((r) => r.isBookmarked)); }
+  if (USE_MOCK) { await wait(); return clone(db.recipes.filter((r) => r.isBookmarked).map((r) => ({ ...r, id: r.recipeId }))); }
   const res = await client.get("/api/users/me/bookmarks", { params: { size: 100 } });
   return res.data.content.map(toCard);
 }
 
 export async function deleteAccount() {
-  if (USE_MOCK) { await wait(300); return; }
+  if (USE_MOCK) { await wait(300); resetDb(); return; }
   await client.delete("/api/users/me");
 }
