@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import TabLayout from "./layouts/TabLayout";
 import Splash from "./pages/Splash";
 import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import Home from "./pages/Home";
 import Search from "./pages/Search";
 import SearchResults from "./pages/SearchResults";
@@ -12,7 +13,6 @@ import EditRecipe from "./pages/EditRecipe";
 import MyPage from "./pages/MyPage";
 import SavedRecipes from "./pages/SavedRecipes";
 import ProfileEdit from "./pages/ProfileEdit";
-import Signup from "./pages/Signup";
 import Placeholder from "./pages/Placeholder";
 
 export default function App() {
