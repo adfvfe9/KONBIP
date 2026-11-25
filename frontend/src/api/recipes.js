@@ -139,7 +139,7 @@ export async function createRecipe(data, imageFile) {
   if (USE_MOCK) {
     await wait(400);
     const r = {
-      id: db.nextId++, title: data.title, brand: data.brand, tags: data.tags,
+      recipeId: db.nextId, id: db.nextId++, title: data.title, brand: data.brand, tags: data.tags,
       bookmarkCount: 0, commentCount: 0, imageUrl: imageFile ? URL.createObjectURL(imageFile) : null, description: "",
       items: data.items, ingredients: toIngredients(data.items), steps: data.steps, isMine: true, isBookmarked: false,
     };
@@ -153,7 +153,7 @@ export async function createRecipe(data, imageFile) {
 export async function updateRecipe(id, data, imageFile, keep) {
   if (USE_MOCK) {
     await wait(400);
-    const r = db.recipes.find((x) => x.id === Number(id));
+    const r = db.recipes.find((x) => x.recipeId === Number(id));
     Object.assign(r, { title: data.title, brand: data.brand, tags: data.tags, steps: data.steps, items: data.items, ingredients: toIngredients(data.items) });
     if (imageFile) r.imageUrl = URL.createObjectURL(imageFile);
     return clone(r);
