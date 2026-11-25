@@ -36,15 +36,6 @@ export const db = {
     { id: 5, nickname: "여행중", timeText: "5일 전", rating: 4, content: "일본 여행 가서 바로 따라 해봤는데 대성공이었어요 ㅎㅎ", likeCount: 2, liked: false, createdAt: 2 },
     { id: 6, nickname: "야식요정", timeText: "1주 전", rating: 4, content: "새벽에 먹었는데 후회 없는 조합이에요. 김가루도 추천!", likeCount: 1, liked: false, createdAt: 1 },
   ],
-  // 조합 등록의 상품 검색용 (서버 GET /api/products 와 같은 모양)
-  products: [
-    { productId: 1, name: "몽고탄멘 컵라면", brand: "세븐일레븐", category: "컵라면" },
-    { productId: 2, name: "반숙 계란", brand: "세븐일레븐", category: "반찬" },
-    { productId: 3, name: "돼지고기 장조림", brand: "세븐일레븐", category: "반찬" },
-    { productId: 4, name: "연어 주먹밥", brand: "로손", category: "주먹밥" },
-    { productId: 5, name: "된장국", brand: "로손", category: "국" },
-    { productId: 6, name: "푸딩", brand: "패밀리마트", category: "디저트" },
-  ],
   me: { nickname: "콘삡", profileImageUrl: null },
   nextId: 100,
 };
