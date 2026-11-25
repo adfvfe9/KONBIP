@@ -303,3 +303,26 @@ a { color: inherit; text-decoration: none; }
 /* 로그인 하단 캐릭터 */
 .login__mascot { display: block; width: 260px; max-width: 70%; margin: auto auto 0; padding-top: 28px; }
 .splash { flex: 1; }
+
+/* 회원가입은 로그인보다 위쪽에서 시작 */
+.login--signup .logo { padding-top: 70px; }
+.login--signup form { margin-top: 36px; }
+
+/* 레시피 시트 캐릭터 이미지 */
+.step-mascot { display: flex; justify-content: center; align-items: center; }
+.step-mascot img { width: 76px; height: auto; display: block; }
+.step-mascot--big { width: auto; }
+.step-mascot--big img { width: 160px; }
+
+/* 후기 작성: 별점 선택 + 등록 버튼 */
+.review-form { margin-top: 4px; }
+.rating-pick { display: flex; align-items: center; gap: 2px; margin-bottom: 8px; }
+.rating-pick button { font-size: 28px; line-height: 1; padding: 2px; color: var(--orange); }
+.rating-pick__label { margin-left: 8px; font-size: 13px; color: var(--gray-text); }
+.comment-row { display: flex; gap: 8px; }
+.comment-row .comment-input { flex: 1; min-width: 0; }
+.comment-submit {
+  flex: none; padding: 0 18px; height: 48px; border-radius: 8px;
+  background: var(--orange); color: #fff; font-size: 14px; font-weight: 600;
+}
+.review-form .error { margin-top: 8px; padding-left: 2px; }

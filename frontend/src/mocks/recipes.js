@@ -5,7 +5,7 @@ const EXT = "jpeg";
 const img = (name) => `/${name}.${EXT}`;
 
 const make = (id, title, brand, tags, bookmarkCount, commentCount, extra = {}) => ({
-  id, title, brand, tags, bookmarkCount, commentCount,
+  recipeId: id, title, brand, tags, bookmarkCount, commentCount,
   imageUrl: null, description: "", ingredients: [], steps: [],
   isMine: false, isBookmarked: false, ...extra,
 });

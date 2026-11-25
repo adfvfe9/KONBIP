@@ -6,11 +6,11 @@ const medalColor = { 1: "var(--gold)", 2: "var(--silver)", 3: "var(--bronze)" };
 
 // to: 눌렀을 때 이동할 주소 (기본은 레시피 상세)
 export default function RecipeCard({ recipe, rank, to }) {
-  const { id, title, brand, tags = [], imageUrl, bookmarkCount = 0, commentCount = 0 } = recipe;
+  const { recipeId, title, brand, tags = [], imageUrl, bookmarkCount = 0, commentCount = 0 } = recipe;
   const src = imageUrl ? imgUrl(imageUrl) : null;
 
   return (
-    <Link to={to ?? `/recipes/${id}`} className="card">
+    <Link to={to ?? `/recipes/${recipeId}`} className="card">
       <div className="card__thumb" style={src ? { backgroundImage: `url(${src})` } : undefined}>
         {rank && (
           <span className="card__rank" style={{ background: medalColor[rank] ?? "var(--gray-text)" }}>{rank}</span>

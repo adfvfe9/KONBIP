@@ -36,7 +36,7 @@ export async function searchRecipes(keyword, sort = "latest") {
 export async function getRecipe(id) {
   if (USE_MOCK) {
     await wait();
-    const r = db.recipes.find((x) => x.id === Number(id));
+    const r = db.recipes.find((x) => x.recipeId === Number(id));
     if (!r) throw { message: "꿀조합을 찾을 수 없어요." };
     return clone(r);
   }
@@ -63,7 +63,7 @@ export async function addReview(id, content, rating = 5) {
 
 export async function toggleBookmark(id, on) {
   if (USE_MOCK) {
-    const r = db.recipes.find((x) => x.id === Number(id));
+    const r = db.recipes.find((x) => x.recipeId === Number(id));
     r.isBookmarked = on;
     r.bookmarkCount += on ? 1 : -1;
     return { isBookmarked: r.isBookmarked, bookmarkCount: r.bookmarkCount };
@@ -102,7 +102,7 @@ export async function createRecipe(data, imageFile) {
   if (USE_MOCK) {
     await wait(400);
     const r = {
-      id: db.nextId++, title: data.title, brand: data.brand, tags: data.tags,
+      recipeId: db.nextId++, title: data.title, brand: data.brand, tags: data.tags,
       bookmarkCount: 0, commentCount: 0, imageUrl: null, description: "",
       ingredients: splitIngredients(data.ingredientsText), steps: data.steps, isMine: true, isBookmarked: false,
     };
@@ -116,7 +116,7 @@ export async function createRecipe(data, imageFile) {
 export async function updateRecipe(id, data, imageFile) {
   if (USE_MOCK) {
     await wait(400);
-    const r = db.recipes.find((x) => x.id === Number(id));
+    const r = db.recipes.find((x) => x.recipeId === Number(id));
     Object.assign(r, { title: data.title, brand: data.brand, tags: data.tags, steps: data.steps, ingredients: splitIngredients(data.ingredientsText) });
     return clone(r);
   }
@@ -127,7 +127,7 @@ export async function updateRecipe(id, data, imageFile) {
 export async function deleteRecipe(id) {
   if (USE_MOCK) {
     await wait(300);
-    db.recipes = db.recipes.filter((x) => x.id !== Number(id));
+    db.recipes = db.recipes.filter((x) => x.recipeId !== Number(id));
     return;
   }
   await client.delete(`/api/recipes/${id}`);

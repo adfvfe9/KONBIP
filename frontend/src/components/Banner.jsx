@@ -33,7 +33,7 @@ export default function Banner({ recipes = [], interval = 4000 }) {
         {recipes.map((r) => {
           const src = imgUrl(r.imageUrl);
           return (
-            <Link key={r.id} to={`/recipes/${r.id}`} className="banner__slide"
+            <Link key={r.recipeId} to={`/recipes/${r.recipeId}`} className="banner__slide"
               style={src ? { backgroundImage: `url(${src})` } : undefined}
               onClick={(e) => { if (swiped.current) e.preventDefault(); }}>
               <div className="banner__caption">
@@ -47,7 +47,7 @@ export default function Banner({ recipes = [], interval = 4000 }) {
 
       <div className="banner__dots">
         {recipes.map((r, i) => (
-          <button key={r.id} className={i === index ? "on" : ""} onClick={() => go(i)} aria-label={`${i + 1}번째 배너`} />
+          <button key={r.recipeId} className={i === index ? "on" : ""} onClick={() => go(i)} aria-label={`${i + 1}번째 배너`} />
         ))}
       </div>
     </div>
