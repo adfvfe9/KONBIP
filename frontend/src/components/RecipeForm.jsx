@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Logo from "./Logo";
 import Modal from "./Modal";
+import ProductPicker from "./ProductPicker";
 import { IconBack, IconPlus } from "./Icons";
 import { imgUrl } from "../api/client";
 
@@ -13,7 +14,7 @@ const parseTags = (text) => [...new Set(text.split(/[\s,#]+/).map((t) => t.trim(
 /**
  * 조합 등록·수정 공용 폼
  * mode: "create" | "edit"
- * initial: { title, tags[], brand, ingredientsText, steps[], imageUrl }
+ * initial: { title, tags[], brand, items[{ productId, name, brand, quantity }], steps[], imageUrl }
  * onSubmit(data, file), onDelete()  (onDelete 는 edit 일 때만)
  */
 export default function RecipeForm({ mode = "create", initial = {}, onSubmit, onDelete }) {
@@ -27,7 +28,7 @@ export default function RecipeForm({ mode = "create", initial = {}, onSubmit, on
   const [tagText, setTagText] = useState((initial.tags ?? []).map((t) => `#${t}`).join(" "));
   const [brand, setBrand] = useState(initial.brand ?? "");
   const [customBrand, setCustomBrand] = useState(!!initial.brand && !BRANDS.includes(initial.brand));
-  const [ingredients, setIngredients] = useState(initial.ingredientsText ?? "");
+  const [items, setItems] = useState(initial.items ?? []);
   const [steps, setSteps] = useState(initial.steps?.length ? initial.steps : [""]);
   const [modal, setModal] = useState(null); // { title, message }
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -53,11 +54,12 @@ export default function RecipeForm({ mode = "create", initial = {}, onSubmit, on
     if (!preview && !isEdit) return setModal({ title: "사진 항목이 추가 되지 않았어요!", message: "항목을 다시 확인하고 추가해 주세요." });
     if (!title.trim()) return setModal({ title: "조합 이름이 비어 있어요!", message: "조합 이름을 작성해 주세요." });
     if (!brand.trim()) return setModal({ title: "대표 편의점이 선택되지 않았어요!", message: "대표 편의점을 골라 주세요." });
+    if (items.length === 0) return setModal({ title: "조합 재료가 비어 있어요!", message: "상품을 검색해서 1개 이상 담아 주세요." });
     if (cleanSteps.length === 0) return setModal({ title: "레시피가 비어 있어요!", message: "조리 순서를 한 단계 이상 적어 주세요." });
 
     setSaving(true);
     try {
-      await onSubmit({ title: title.trim(), ingredientsText: ingredients.trim(), brand: brand.trim(), tags: parseTags(tagText), steps: cleanSteps }, file);
+      await onSubmit({ title: title.trim(), items, brand: brand.trim(), tags: parseTags(tagText), steps: cleanSteps }, file);
     } catch (err) {
       setModal({ title: isEdit ? "수정에 실패했어요!" : "등록에 실패했어요!", message: err?.message ?? "잠시 후 다시 시도해 주세요." });
       setSaving(false);
@@ -109,8 +111,8 @@ export default function RecipeForm({ mode = "create", initial = {}, onSubmit, on
             value={brand} onChange={(e) => setBrand(e.target.value)} />
         )}
 
-        <input className="line" style={{ marginTop: 26 }} placeholder="조합에 필요한 재료를 입력 해주세요"
-          value={ingredients} onChange={(e) => setIngredients(e.target.value)} />
+        <h2 className="block-title" style={{ marginTop: 40 }}>조합 재료</h2>
+        <ProductPicker value={items} onChange={setItems} />
 
         <h2 className="block-title" style={{ marginTop: 40 }}>레시피 작성</h2>
         <ol className="steps">

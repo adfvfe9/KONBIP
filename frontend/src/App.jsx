@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import TabLayout from "./layouts/TabLayout";
 import Splash from "./pages/Splash";
 import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import Home from "./pages/Home";
 import Search from "./pages/Search";
 import SearchResults from "./pages/SearchResults";
@@ -20,7 +21,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Splash />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Placeholder title="회원가입" />} />
+        <Route path="/signup" element={<Signup />} />
         <Route path="/search" element={<Search />} />
         <Route path="/search/results" element={<SearchResults />} />
         <Route path="/recipes/:id" element={<RecipeDetail />} />

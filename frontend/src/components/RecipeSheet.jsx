@@ -15,7 +15,7 @@ export default function RecipeSheet({ recipe, onClose }) {
           {ingredients.map((ing) => (
             <div key={ing.name} className="ing">
               <div className="ing__thumb" />
-              <span>{ing.name}</span>
+              <span>{ing.name}{ing.quantity > 1 && <span className="ing__qty">×{ing.quantity}</span>}</span>
             </div>
           ))}
         </div>
