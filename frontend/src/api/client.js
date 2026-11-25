@@ -5,7 +5,8 @@ export const API = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
 // 서버가 준 상대 경로(/api/recipes/1/image)를 전체 주소로 바꾼다. null 이면 null.
 export const imgUrl = (path) => {
   if (!path) return null;
-  return /^(https?:|blob:|data:)/.test(path) ? path : API + path;
+  // 서버가 주는 상대 경로(/api/...)만 서버 주소를 붙이고, public 폴더 이미지(/abc.jpeg)와 외부 주소는 그대로 쓴다.
+  return path.startsWith("/api/") ? API + path : path;
 };
 
 const client = axios.create({ baseURL: API });

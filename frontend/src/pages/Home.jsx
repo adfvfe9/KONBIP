@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
 import SearchBar from "../components/SearchBar";
 import RecipeCard from "../components/RecipeCard";
+import Banner from "../components/Banner";
 import { getHome } from "../api/recipes";
 
 export default function Home() {
@@ -17,8 +18,8 @@ export default function Home() {
       <main className="page">
         <SearchBar readOnly onClick={() => navigate("/search")} />
 
-        {/* 배너 자리: 디자인 확정 후 이미지/슬라이드로 교체 */}
-        <div className="banner"><i /><i /><i /></div>
+        {/* 배너: 인기 꿀조합 3개를 슬라이드로 보여 준다 */}
+        <Banner recipes={home?.popular?.slice(0, 3)} />
 
         <h2 className="section-title">최근 인기상승한 <mark>편의점 꿀조합</mark></h2>
         {!home ? (
