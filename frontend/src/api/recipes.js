@@ -72,7 +72,7 @@ export async function searchRecipes(keyword, sort = "latest") {
 export async function getRecipe(id) {
   if (USE_MOCK) {
     await wait();
-    const r = db.recipes.find((x) => x.id === Number(id));
+    const r = db.recipes.find((x) => x.recipeId === Number(id));
     if (!r) throw { message: "꿀조합을 찾을 수 없어요." };
     return clone(r);
   }
@@ -99,7 +99,7 @@ export async function addComment(id, content) {
 
 export async function toggleBookmark(id, on) {
   if (USE_MOCK) {
-    const r = db.recipes.find((x) => x.id === Number(id));
+    const r = db.recipes.find((x) => x.recipeId === Number(id));
     r.isBookmarked = on;
     r.bookmarkCount += on ? 1 : -1;
     return { isBookmarked: r.isBookmarked, bookmarkCount: r.bookmarkCount };
@@ -164,7 +164,7 @@ export async function updateRecipe(id, data, imageFile, keep) {
 export async function deleteRecipe(id) {
   if (USE_MOCK) {
     await wait(300);
-    db.recipes = db.recipes.filter((x) => x.id !== Number(id));
+    db.recipes = db.recipes.filter((x) => x.recipeId !== Number(id));
     return;
   }
   await client.delete(`/api/recipes/${id}`);

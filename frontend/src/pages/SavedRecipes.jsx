@@ -21,7 +21,7 @@ export default function SavedRecipes() {
         </div>
         {list === null && <p className="empty">불러오는 중...</p>}
         {list?.length === 0 && <p className="empty">저장한 조합이 없어요.<br />마음에 드는 조합의 별을 눌러 보세요.</p>}
-        {list?.map((r) => <RecipeCard key={r.id} recipe={r} />)}
+        {list?.map((r) => <RecipeCard key={r.recipeId} recipe={r} />)}
       </main>
     </>
   );

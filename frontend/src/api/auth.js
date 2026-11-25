@@ -30,3 +30,13 @@ export async function logout() {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
 }
+
+// 회원가입. 서버는 가입 즉시 토큰을 돌려준다. (요청 필드명은 서버와 맞는지 확인: email, password, nickname)
+export async function signup({ email, password, nickname }) {
+  if (USE_MOCK) {
+    await new Promise((r) => setTimeout(r, 300));
+    return { accessToken: "mock-access", refreshToken: "mock-refresh" };
+  }
+  const res = await client.post("/api/auth/signup", { email, password, nickname });
+  return res.data;
+}

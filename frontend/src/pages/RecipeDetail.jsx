@@ -19,6 +19,8 @@ export default function RecipeDetail({ mine = false }) {
   const [sort, setSort] = useState("latest");
   const [sheet, setSheet] = useState(false);
   const [text, setText] = useState("");
+  const [rating, setRating] = useState(0); // 0 = 아직 고르지 않음
+  const [reviewError, setReviewError] = useState("");
   const [error, setError] = useState("");
   const [actionError, setActionError] = useState("");
 

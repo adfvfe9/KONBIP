@@ -51,7 +51,7 @@ export default function SearchResults() {
 
         {list === null && <p className="empty">불러오는 중...</p>}
         {list?.length === 0 && <p className="empty">‘{q}’에 맞는 꿀조합이 없어요. 다른 검색어로 찾아보세요.</p>}
-        {list?.map((r) => <RecipeCard key={r.id} recipe={r} />)}
+        {list?.map((r) => <RecipeCard key={r.recipeId} recipe={r} />)}
       </main>
     </>
   );

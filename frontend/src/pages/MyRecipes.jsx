@@ -27,7 +27,7 @@ export default function MyRecipes() {
             <button className="btn" style={{ marginTop: 16, padding: "0 24px" }} onClick={() => navigate("/create")}>첫 조합 만들기</button>
           </div>
         )}
-        {list?.map((r) => <RecipeCard key={r.id} recipe={r} to={`/my-recipes/${r.id}`} />)}
+        {list?.map((r) => <RecipeCard key={r.recipeId} recipe={r} to={`/my-recipes/${r.recipeId}`} />)}
       </main>
     </>
   );

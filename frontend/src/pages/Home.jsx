@@ -25,7 +25,7 @@ export default function Home() {
         {!home ? (
           <p className="empty">불러오는 중...</p>
         ) : (
-          home.popular.slice(0, 3).map((r, i) => <RecipeCard key={r.id} recipe={r} rank={i + 1} />)
+          home.popular.slice(0, 3).map((r, i) => <RecipeCard key={r.recipeId} recipe={r} rank={i + 1} />)
         )}
       </main>
     </>

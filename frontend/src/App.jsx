@@ -13,6 +13,7 @@ import EditRecipe from "./pages/EditRecipe";
 import MyPage from "./pages/MyPage";
 import SavedRecipes from "./pages/SavedRecipes";
 import ProfileEdit from "./pages/ProfileEdit";
+import Signup from "./pages/Signup";
 import Placeholder from "./pages/Placeholder";
 
 export default function App() {
