@@ -21,7 +21,7 @@ export default function EditRecipe() {
     tags: recipe.tags,
     brand: recipe.brand,
     imageUrl: recipe.imageUrl,
-    ingredientsText: (recipe.ingredients ?? []).map((i) => i.name).join(", "),
+    items: (recipe.items ?? []).map((i) => ({ productId: i.productId, name: i.name, brand: i.brand, quantity: i.quantity })),
     steps: recipe.steps,
   };
 
@@ -30,7 +30,8 @@ export default function EditRecipe() {
       mode="edit"
       initial={initial}
       onSubmit={async (data, file) => {
-        await updateRecipe(id, data, file);
+        // 화면에 입력칸이 없는 설명은 기존 값을 그대로 보낸다. (안 보내면 지워짐)
+        await updateRecipe(id, data, file, { description: recipe.description });
         navigate(`/my-recipes/${id}`, { replace: true });
       }}
       onDelete={async () => {

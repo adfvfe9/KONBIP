@@ -1,0 +1,4 @@
+.gradle
+build
+application-secret.yml
+*.log

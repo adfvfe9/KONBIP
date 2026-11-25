@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { login } from "../api/auth";
+import { login, saveTokens } from "../api/auth";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -15,9 +15,7 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      const tokens = await login(email.trim(), password);
-      localStorage.setItem("accessToken", tokens.accessToken);
-      localStorage.setItem("refreshToken", tokens.refreshToken);
+      saveTokens(await login(email.trim(), password));
       navigate("/home", { replace: true });
     } catch (err) {
       setError(err?.message ?? "로그인에 실패했어요. 다시 시도해 주세요.");

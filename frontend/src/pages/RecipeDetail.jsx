@@ -4,7 +4,7 @@ import Logo from "../components/Logo";
 import RecipeSheet from "../components/RecipeSheet";
 import { IconBack, IconStar } from "../components/Icons";
 import { imgUrl } from "../api/client";
-import { getRecipe, getReviews, addReview, toggleBookmark } from "../api/recipes";
+import { getRecipe, getComments, addComment, toggleBookmark } from "../api/recipes";
 
 const Stars = ({ value }) => (
   <span className="stars" aria-label={`별점 ${value}점`}>{"★".repeat(value)}{"☆".repeat(5 - value)}</span>
@@ -22,10 +22,11 @@ export default function RecipeDetail({ mine = false }) {
   const [rating, setRating] = useState(0); // 0 = 아직 고르지 않음
   const [reviewError, setReviewError] = useState("");
   const [error, setError] = useState("");
+  const [actionError, setActionError] = useState("");
 
   useEffect(() => {
     getRecipe(id).then(setRecipe).catch((e) => setError(e?.message ?? "불러오지 못했어요."));
-    getReviews(id).then(setReviews);
+    getComments(id).then(setReviews).catch(() => setReviews([]));
   }, [id]);
 
   if (error) return <p className="empty">{error}</p>;
@@ -34,24 +35,25 @@ export default function RecipeDetail({ mine = false }) {
   const sorted = [...reviews].sort((a, b) => (sort === "popular" ? b.likeCount - a.likeCount : b.createdAt - a.createdAt));
 
   async function bookmark() {
-    const r = await toggleBookmark(id, !recipe.isBookmarked);
-    setRecipe((p) => ({ ...p, ...r }));
+    try {
+      const r = await toggleBookmark(id, !recipe.isBookmarked);
+      setRecipe((p) => ({ ...p, ...r }));
+    } catch (e) {
+      setActionError(e?.message ?? "즐겨찾기를 바꾸지 못했어요.");
+    }
   }
 
   async function submitReview(e) {
     e.preventDefault();
     const content = text.trim();
-    if (rating === 0) return setReviewError("별점을 선택해 주세요.");
-    if (!content) return setReviewError("후기 내용을 입력해 주세요.");
-    setReviewError("");
+    if (!content) return;
+    setActionError("");
     try {
-      const r = await addReview(id, content, rating);
+      const r = await addComment(id, content);
       setReviews((list) => [r, ...list]);
       setText("");
-      setRating(0);
     } catch (err) {
-      // 서버 메시지 예: 이미 후기를 작성했거나, 내 꿀조합에는 쓸 수 없는 경우
-      setReviewError(err?.message ?? "후기를 등록하지 못했어요. 잠시 후 다시 시도해 주세요.");
+      setActionError(err?.message ?? "댓글을 남기지 못했어요.");
     }
   }
 
@@ -74,7 +76,7 @@ export default function RecipeDetail({ mine = false }) {
         <div className="hero" style={hero ? { backgroundImage: `url(${hero})` } : undefined} />
 
         <h2 className="detail-title"><span className="card__brand">{recipe.brand}</span> {recipe.title}</h2>
-        <div className="card__tags">{recipe.tags.map((t) => <span key={t}># {t}</span>)}</div>
+        <div className="card__tags">{(recipe.tags ?? []).map((t) => <span key={t}># {t}</span>)}</div>
         {recipe.description && <p className="detail-desc">{recipe.description}</p>}
         <hr className="rule" style={{ marginTop: 36 }} />
 
@@ -85,29 +87,18 @@ export default function RecipeDetail({ mine = false }) {
           ))}
         </div>
 
-        <form onSubmit={submitReview} className="review-form">
-          <div className="rating-pick" role="radiogroup" aria-label="별점 선택">
-            {[1, 2, 3, 4, 5].map((n) => (
-              <button type="button" key={n} role="radio" aria-checked={rating === n} aria-label={`${n}점`}
-                className={n <= rating ? "on" : ""} onClick={() => setRating(n)}>
-                {n <= rating ? "★" : "☆"}
-              </button>
-            ))}
-            <span className="rating-pick__label">{rating ? `${rating}점` : "별점을 선택해 주세요"}</span>
-          </div>
-          <div className="comment-row">
-            <input className="comment-input" placeholder="댓글 추가하기" value={text} onChange={(e) => setText(e.target.value)} maxLength={500} />
-            <button type="submit" className="comment-submit">등록</button>
-          </div>
-          {reviewError && <p className="error">{reviewError}</p>}
+        <form onSubmit={submitReview}>
+          <input className="comment-input" placeholder="댓글 추가하기" value={text} maxLength={300} onChange={(e) => setText(e.target.value)} />
         </form>
+        {actionError && <p className="error" style={{ marginTop: 8 }}>{actionError}</p>}
+        {reviews.length === 0 && <p className="empty">아직 댓글이 없어요. 첫 댓글을 남겨 보세요!</p>}
 
         {sorted.map((r) => (
           <article key={r.id} className="review">
             <div className="review__avatar" />
             <div className="review__main">
               <div className="review__who"><b>{r.nickname}</b><span>• {r.timeText}</span></div>
-              <Stars value={r.rating} />
+              {r.rating != null && <Stars value={r.rating} />}
             </div>
             <button className="review__like" onClick={() => toggleLike(r.id)} aria-label="후기 좋아요">
               <span className={r.liked ? "heart heart--on" : "heart"}>{r.liked ? "♥" : "♡"}</span>

@@ -1,13 +1,49 @@
 import client from "./client";
 import { db } from "../mocks/recipes";
 
-// 서버가 준비되면 false 로 바꾸세요.
-export const USE_MOCK = true;
+// true 면 서버 없이 mocks/recipes.js 의 가짜 데이터로 화면만 확인한다. (새로고침하면 초기화)
+export const USE_MOCK = false;
 
 const wait = (ms = 250) => new Promise((r) => setTimeout(r, ms));
 const clone = (v) => JSON.parse(JSON.stringify(v));
-const splitIngredients = (text = "") =>
-  text.split(/[,，\n]/).map((s) => s.trim()).filter(Boolean).map((name) => ({ name }));
+// 담은 상품 → 레시피 시트의 '조합 재료' 표시용
+const toIngredients = (items = []) => items.map((i) => ({ name: i.name, quantity: i.quantity }));
+
+/* ───── 서버 응답 → 화면에서 쓰는 모양 ───── */
+
+// 목록 카드: 서버는 recipeId, 화면은 id 를 쓴다.
+export const toCard = (r) => ({ ...r, id: r.recipeId });
+
+// 상세: steps 는 문자열 배열, ingredients 는 담은 상품 [{ name, quantity }] 으로 바꾼다.
+const toDetail = (r) => ({
+  ...r,
+  id: r.recipeId,
+  steps: (r.steps ?? []).map((s) => s.content),
+  ingredients: toIngredients(r.items),
+});
+
+export function timeAgo(iso) {
+  const sec = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+  if (sec < 60) return "방금 전";
+  if (sec < 3600) return `${Math.floor(sec / 60)}분 전`;
+  if (sec < 86400) return `${Math.floor(sec / 3600)}시간 전`;
+  if (sec < 86400 * 7) return `${Math.floor(sec / 86400)}일 전`;
+  if (sec < 86400 * 30) return `${Math.floor(sec / (86400 * 7))}주 전`;
+  return new Date(iso).toLocaleDateString("ko-KR");
+}
+
+// 댓글: 후기 목록 UI 에 맞춘다. 서버 댓글에는 별점과 좋아요가 없다.
+const toComment = (c) => ({
+  id: c.commentId,
+  authorId: c.authorId,
+  nickname: c.author,
+  timeText: timeAgo(c.createdAt),
+  createdAt: new Date(c.createdAt).getTime(),
+  content: c.content,
+  rating: null,
+  likeCount: 0,
+  liked: false,
+});
 
 /* ───── 홈·검색 ───── */
 export async function getHome() {
@@ -16,7 +52,7 @@ export async function getHome() {
     return { popular: clone(popular), latest: clone([...db.recipes].reverse()) };
   }
   const res = await client.get("/api/home");
-  return res.data; // TODO: 응답 필드명(popular/latest 등)을 확인해서 맞추기
+  return { popular: res.data.popularRecipes.map(toCard), latest: res.data.latestRecipes.map(toCard) };
 }
 
 // sort: "latest" | "popular"
@@ -29,7 +65,7 @@ export async function searchRecipes(keyword, sort = "latest") {
     return clone(sorted);
   }
   const res = await client.get("/api/recipes", { params: { keyword, sort, size: 20 } });
-  return res.data.content;
+  return res.data.content.map(toCard);
 }
 
 /* ───── 상세 ───── */
@@ -41,24 +77,24 @@ export async function getRecipe(id) {
     return clone(r);
   }
   const res = await client.get(`/api/recipes/${id}`);
-  return res.data; // TODO: ingredients/steps/isMine 등 필드명 확인
+  return toDetail(res.data);
 }
 
-export async function getReviews(id) {
-  if (USE_MOCK) { await wait(); return clone(db.reviews); }
-  const res = await client.get(`/api/recipes/${id}/reviews`);
-  return res.data.content ?? res.data;
+// 화면의 '댓글 추가하기' 는 서버의 댓글(comments) API 를 쓴다. (리뷰는 회원당 1개 제한이 있어서 맞지 않음)
+export async function getComments(id) {
+  if (USE_MOCK) { await wait(); return Number(id) === 1 ? clone(db.reviews) : []; }
+  const res = await client.get(`/api/recipes/${id}/comments`, { params: { size: 100 } });
+  return res.data.content.map(toComment);
 }
 
-// 디자인에는 별점 선택 UI가 없어서 우선 5점으로 보낸다. (디자인 확정 후 수정)
-export async function addReview(id, content, rating = 5) {
+export async function addComment(id, content) {
   if (USE_MOCK) {
-    const review = { id: db.nextId++, nickname: "콘삡", timeText: "방금 전", rating, content, likeCount: 0, liked: false, createdAt: Date.now() };
-    db.reviews.unshift(review);
-    return clone(review);
+    const c = { id: db.nextId++, nickname: db.me.nickname, timeText: "방금 전", rating: null, content, likeCount: 0, liked: false, createdAt: Date.now() };
+    if (Number(id) === 1) db.reviews.unshift(c);
+    return clone(c);
   }
-  const res = await client.post(`/api/recipes/${id}/reviews`, { rating, content });
-  return res.data;
+  const res = await client.post(`/api/recipes/${id}/comments`, { content });
+  return toComment(res.data);
 }
 
 export async function toggleBookmark(id, on) {
@@ -75,25 +111,26 @@ export async function toggleBookmark(id, on) {
 /* ───── 내 조합 ───── */
 export async function getMyRecipes() {
   if (USE_MOCK) { await wait(); return clone(db.recipes.filter((r) => r.isMine)); }
-  const res = await client.get("/api/users/me/recipes");
-  return res.data.content ?? res.data;
+  const res = await client.get("/api/users/me/recipes", { params: { size: 100 } });
+  return res.data.content.map(toCard);
 }
 
-// data: { title, ingredientsText, brand, tags, steps }
-function toServerBody(data) {
+// data: { title, items[{ productId, quantity }], brand, tags, steps }
+// keep: 수정할 때 화면에 입력칸이 없는 값(description)을 그대로 유지하려고 넘긴다.
+function toServerBody(data, keep = {}) {
   return {
     title: data.title,
-    description: data.ingredientsText, // 디자인의 '재료' 입력을 설명으로 보낸다
+    description: keep.description ?? null,
     brand: data.brand,
     tags: data.tags,
     steps: data.steps,
-    items: [], // TODO: 백엔드는 상품 선택(productId)을 요구한다. 재료 방식이 정해지면 수정
+    items: data.items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
   };
 }
 
-function toForm(data, imageFile) {
+function toForm(data, imageFile, keep) {
   const form = new FormData();
-  form.append("recipe", new Blob([JSON.stringify(toServerBody(data))], { type: "application/json" }));
+  form.append("recipe", new Blob([JSON.stringify(toServerBody(data, keep))], { type: "application/json" }));
   if (imageFile) form.append("image", imageFile);
   return form;
 }
@@ -102,26 +139,26 @@ export async function createRecipe(data, imageFile) {
   if (USE_MOCK) {
     await wait(400);
     const r = {
-      recipeId: db.nextId++, title: data.title, brand: data.brand, tags: data.tags,
-      bookmarkCount: 0, commentCount: 0, imageUrl: null, description: "",
-      ingredients: splitIngredients(data.ingredientsText), steps: data.steps, isMine: true, isBookmarked: false,
+      id: db.nextId++, title: data.title, brand: data.brand, tags: data.tags,
+      bookmarkCount: 0, commentCount: 0, imageUrl: imageFile ? URL.createObjectURL(imageFile) : null, description: "",
+      items: data.items, ingredients: toIngredients(data.items), steps: data.steps, isMine: true, isBookmarked: false,
     };
     db.recipes.push(r);
     return clone(r);
   }
   const res = await client.post("/api/recipes", toForm(data, imageFile));
-  return res.data;
+  return { id: res.data.recipeId };
 }
 
-export async function updateRecipe(id, data, imageFile) {
+export async function updateRecipe(id, data, imageFile, keep) {
   if (USE_MOCK) {
     await wait(400);
-    const r = db.recipes.find((x) => x.recipeId === Number(id));
-    Object.assign(r, { title: data.title, brand: data.brand, tags: data.tags, steps: data.steps, ingredients: splitIngredients(data.ingredientsText) });
+    const r = db.recipes.find((x) => x.id === Number(id));
+    Object.assign(r, { title: data.title, brand: data.brand, tags: data.tags, steps: data.steps, items: data.items, ingredients: toIngredients(data.items) });
+    if (imageFile) r.imageUrl = URL.createObjectURL(imageFile);
     return clone(r);
   }
-  const res = await client.patch(`/api/recipes/${id}`, toForm(data, imageFile)); // 전체 내용을 보낸다
-  return res.data;
+  await client.patch(`/api/recipes/${id}`, toForm(data, imageFile, keep)); // 전체 내용을 보낸다
 }
 
 export async function deleteRecipe(id) {

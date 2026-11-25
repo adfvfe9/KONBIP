@@ -30,12 +30,19 @@ client.interceptors.response.use(
         try {
           const { data } = await axios.post(`${API}/api/auth/refresh`, { refreshToken });
           localStorage.setItem("accessToken", data.data.accessToken);
+          if (data.data.refreshToken) localStorage.setItem("refreshToken", data.data.refreshToken);
           return client(original);
         } catch {
           /* 갱신 실패 → 아래에서 로그아웃 */
         }
       }
-      localStorage.clear();
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      window.location.href = "/login";
+    }
+
+    // 로그인이 필요한 기능(즐겨찾기, 댓글, 마이페이지 등)을 비회원이 쓰면 로그인 화면으로 보낸다.
+    if (err.response?.status === 401 && body?.code === "UNAUTHORIZED" && window.location.pathname !== "/login") {
       window.location.href = "/login";
     }
     return Promise.reject(body ?? err);
