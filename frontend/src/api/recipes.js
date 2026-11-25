@@ -40,15 +40,15 @@ export function timeAgo(iso) {
   return new Date(iso).toLocaleDateString("ko-KR");
 }
 
-// 댓글: 후기 목록 UI 에 맞춘다. 서버 댓글에는 별점과 좋아요가 없다.
-const toComment = (c) => ({
-  id: c.commentId,
+// 후기(별점 + 내용): 화면의 후기 목록 모양으로 바꾼다. 서버 후기에는 좋아요가 없다.
+const toReview = (c) => ({
+  id: c.reviewId,
   authorId: c.authorId,
   nickname: c.author,
   timeText: timeAgo(c.createdAt),
   createdAt: new Date(c.createdAt).getTime(),
   content: c.content,
-  rating: null,
+  rating: c.rating,
   likeCount: 0,
   liked: false,
 });
@@ -89,25 +89,25 @@ export async function getRecipe(id) {
   return toDetail(res.data);
 }
 
-// 화면의 '댓글 추가하기' 는 서버의 댓글(comments) API 를 쓴다. (리뷰는 회원당 1개 제한이 있어서 맞지 않음)
-export async function getComments(id) {
-  if (USE_MOCK) { await wait(); return clone(db.comments[id] ?? []); }
-  const res = await client.get(`/api/recipes/${id}/comments`, { params: { size: 100 } });
-  return res.data.content.map(toComment);
+// 후기 (별점 1~5 + 내용). 서버 규칙: 회원당 조합 하나에 1개, 내 조합에는 쓸 수 없음.
+export async function getReviews(id) {
+  if (USE_MOCK) { await wait(); return clone(db.reviews[id] ?? []); }
+  const res = await client.get(`/api/recipes/${id}/reviews`, { params: { size: 100 } });
+  return res.data.content.map(toReview);
 }
 
-export async function addComment(id, content) {
+export async function addReview(id, content, rating) {
   if (USE_MOCK) {
     const r = findMock(id);
     if (!r) throw { message: "꿀조합을 찾을 수 없어요." };
-    const c = { id: db.nextId++, nickname: db.me.nickname, timeText: "방금 전", rating: null, content, likeCount: 0, liked: false, createdAt: Date.now() };
-    db.comments[id] = [c, ...(db.comments[id] ?? [])];
-    r.commentCount = db.comments[id].length;
+    const review = { id: db.nextId++, nickname: db.me.nickname, timeText: "방금 전", rating, content, likeCount: 0, liked: false, createdAt: Date.now() };
+    db.reviews[id] = [review, ...(db.reviews[id] ?? [])];
+    r.commentCount = db.reviews[id].length;
     saveDb();
-    return clone(c);
+    return clone(review);
   }
-  const res = await client.post(`/api/recipes/${id}/comments`, { content });
-  return toComment(res.data);
+  const res = await client.post(`/api/recipes/${id}/reviews`, { rating, content });
+  return toReview(res.data);
 }
 
 export async function toggleBookmark(id, on) {
@@ -180,7 +180,7 @@ export async function deleteRecipe(id) {
   if (USE_MOCK) {
     await wait(300);
     db.recipes = db.recipes.filter((x) => x.recipeId !== Number(id));
-    delete db.comments[id];
+    delete db.reviews[id];
     saveDb();
     return;
   }

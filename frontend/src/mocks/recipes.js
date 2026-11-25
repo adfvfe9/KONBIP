@@ -1,12 +1,12 @@
 // 테스트 데이터 (서버 없이 화면을 돌릴 때 쓴다. api/recipes.js 의 USE_MOCK 참고)
-// 사용자가 만든 조합·댓글·즐겨찾기·프로필은 sessionStorage 에 저장한다.
+// 사용자가 만든 조합·후기·즐겨찾기·프로필은 sessionStorage 에 저장한다.
 // → 새로고침해도 유지되고, 탭(브라우저)을 닫으면 처음 상태로 돌아간다.
 
 // public 폴더에 넣은 이미지. 확장자가 다르면 EXT 한 줄만 바꾸세요. (예: "jpg")
 const EXT = "jpeg";
 const img = (name) => `/${name}.${EXT}`;
 
-const KEY = "konbip-mock-db-v2";
+const KEY = "konbip-mock-db-v3";
 
 // 조합 등록의 상품 검색용 (서버 GET /api/products 와 같은 모양)
 const PRODUCTS = [
@@ -37,8 +37,8 @@ const make = (id, title, brand, tags, bookmarkCount, commentCount, extra = {}) =
   isMine: false, isBookmarked: false, createdAt: id, ...extra,
 });
 
-const comment = (id, nickname, timeText, content, likeCount, liked, createdAt) =>
-  ({ id, nickname, timeText, rating: null, content, likeCount, liked, createdAt });
+const review = (id, nickname, timeText, rating, content, likeCount, liked, createdAt) =>
+  ({ id, nickname, timeText, rating, content, likeCount, liked, createdAt });
 
 function seed() {
   return {
@@ -66,19 +66,19 @@ function seed() {
         items: [item(11), item(12)], steps: ["샌드위치와 우유를 함께 먹어요"],
       }),
     ],
-    // 조합별 댓글 { [recipeId]: [...] }
-    comments: {
+    // 조합별 후기 { [recipeId]: [...] }
+    reviews: {
       1: [
-        comment(1, "라멘", "15시간 전", "체다 치즈 추가하면 더 맛있어져요ㅠㅠ", 12, true, 6),
-        comment(2, "비둘기", "1일 전", "반숙란 터뜨려서 국물에 풀어 먹으니까 진짜 꿀맛이에요!", 9, false, 5),
-        comment(3, "콘삡러", "2일 전", "저한테는 조금 매웠어요. 우유랑 같이 먹으면 딱 좋아요", 4, false, 4),
-        comment(4, "편의점탐험가", "3일 전", "장조림 올리니까 든든해서 한 끼로 충분했어요", 7, true, 3),
-        comment(5, "여행중", "5일 전", "일본 여행 가서 바로 따라 해봤는데 대성공이었어요 ㅎㅎ", 2, false, 2),
-        comment(6, "야식요정", "1주 전", "새벽에 먹었는데 후회 없는 조합이에요. 김가루도 추천!", 1, false, 1),
+        review(1, "라멘", "15시간 전", 4, "체다 치즈 추가하면 더 맛있어져요ㅠㅠ", 12, true, 6),
+        review(2, "비둘기", "1일 전", 5, "반숙란 터뜨려서 국물에 풀어 먹으니까 진짜 꿀맛이에요!", 9, false, 5),
+        review(3, "콘삡러", "2일 전", 3, "저한테는 조금 매웠어요. 우유랑 같이 먹으면 딱 좋아요", 4, false, 4),
+        review(4, "편의점탐험가", "3일 전", 5, "장조림 올리니까 든든해서 한 끼로 충분했어요", 7, true, 3),
+        review(5, "여행중", "5일 전", 4, "일본 여행 가서 바로 따라 해봤는데 대성공이었어요 ㅎㅎ", 2, false, 2),
+        review(6, "야식요정", "1주 전", 4, "새벽에 먹었는데 후회 없는 조합이에요. 김가루도 추천!", 1, false, 1),
       ],
       2: [
-        comment(7, "라멘", "2일 전", "된장국이랑 먹으니까 아침으로 딱이에요", 3, false, 2),
-        comment(8, "비둘기", "4일 전", "간단해서 자주 해 먹어요!", 1, false, 1),
+        review(7, "라멘", "2일 전", 5, "된장국이랑 먹으니까 아침으로 딱이에요", 3, false, 2),
+        review(8, "비둘기", "4일 전", 4, "간단해서 자주 해 먹어요!", 1, false, 1),
       ],
     },
     products: PRODUCTS,

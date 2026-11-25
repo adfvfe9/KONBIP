@@ -17,7 +17,7 @@ export async function login(email, password) {
 }
 
 // 가입하면 바로 로그인 토큰이 온다.
-export async function signup(email, password, nickname) {
+export async function signup({ email, password, nickname }) {
   if (USE_MOCK) {
     db.me.nickname = nickname; // 테스트 모드: 가입한 닉네임으로 활동한다
     saveDb();
